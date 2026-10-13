@@ -2,232 +2,202 @@
 
 GymPass style app.
 
-## RFs (Requisitos funcionais)
+## Functional Requirements
 
-- [x] Deve ser possível se cadastrar;
-- [x] Deve ser possível se autenticar;
-- [x] Deve ser possível obter o perfil de um usuário logado;
-- [x] Deve ser possível obter o número de check-ins realizados pelo usuário logado;
-- [x] Deve ser possível o usuário obter o seu histórico de check-ins;
-- [x] Deve ser possível o usuário buscar academias próximas (até 10km);
-- [x] Deve ser possível o usuário buscar academias pelo nome;
-- [x] Deve ser possível o usuário realizar check-in em uma academia;
-- [x] Deve ser possível validar o check-in de um usuário;
-- [x] Deve ser possível cadastrar uma academia;
+* \[x\] Users must be able to register;
+* \[x\] Users must be able to authenticate;
+* \[x\] Users must be able to get their logged-in profile;
+* \[x\] Users must be able to get the number of check-ins performed;
+* \[x\] Users must be able to get their check-in history;
+* \[x\] Users must be able to search for nearby gyms (up to 10km);
+* \[x\] Users must be able to search gyms by name;
+* \[x\] Users must be able to check-in at a gym;
+* \[x\] Check-ins must be validated;
+* \[x\] Gyms must be able to be registered;
 
-## RNs (Regras de negócio)
+## Business Rules
 
-- [x] O usuário não deve poder se cadastrar com um e-mail duplicado;
-- [x] O usuário não pode fazer 2 check-ins no mesmo dia;
-- [x] O usuário não pode fazer check-in se não estiver perto (100m) da academia;
-- [x] O check-in só pode ser validado até 20 minutos após ser criado;
-- [x] O check-in só pode ser validado por administradores;
-- [x] A academia só pode ser cadastrada por administradores;
+* \[x\] Users cannot register with a duplicate email;
+* \[x\] Users cannot make 2 check-ins on the same day;
+* \[x\] Users cannot check-in if they are not close (100m) to the gym;
+* \[x\] Check-ins can only be validated up to 20 minutes after creation;
+* \[x\] Check-ins can only be validated by administrators;
+* \[x\] Gyms can only be registered by administrators;
 
-## RNFs (Requisitos não-funcionais)
+## Non-Functional Requirements
 
-- [x] A senha do usuário precisa estar criptografada;
-- [x] Os dados da aplicação precisam estar persistidos em um banco PostgreSQL;
-- [x] Todas listas de dados precisam estar paginadas com 20 itens por página;
-- [x] O usuário deve ser identificado por um JWT (JSON Web Token);
+* \[x\] User passwords must be encrypted;
+* \[x\] Application data must be persisted in a PostgreSQL database;
+* \[x\] All data lists must be paginated with 20 items per page;
+* \[x\] Users must be identified by a JWT (JSON Web Token);
 
-## 🛠️ Tech Stack & Ferramentas
+## 🛠️ Tech Stack & Tools
 
 ### Core & Runtime
+* [**Node.js**](https://nodejs.org/) (v20+) & [**TypeScript**](https://www.typescriptlang.org/)
+* [**Fastify**](https://www.fastify.io/) - Blazing fast and low overhead web framework
+* [**Zod**](https://zod.dev/) - Schema validation and static type inference
+* [**Prisma ORM**](https://www.prisma.io/) - Next-generation ORM for database mapping
+* [**PostgreSQL**](https://www.postgresql.org/) - Relational database (via Docker)
 
-- **[Node.js](https://nodejs.org/)** (v20+) & **[TypeScript](https://www.typescriptlang.org/)**
-- **[Fastify](https://www.fastify.io/)** - Framework web ultrarrápido com baixo overhead
-- **[Zod](https://zod.dev/)** - Validação de schemas e inferência de tipos em tempo de execução
-- **[Prisma ORM](https://www.prisma.io/)** - Mapeamento objeto-relacional para banco de dados
-- **[PostgreSQL](https://www.postgresql.org/)** - Banco de dados relacional (via Docker)
+### Authentication & Security
+* [**Fastify JWT**](https://github.com/fastify/fastify-jwt) - JSON Web Token authentication
+* [**Fastify Cookie**](https://github.com/fastify/fastify-cookie) - Secure HTTP-only Cookie handling for Refresh Tokens
+* [**BcryptJS**](https://github.com/dcodeIO/bcrypt.js) - Secure password hashing
 
-### Autenticação & Segurança
-
-- **[Fastify JWT](https://github.com/fastify/fastify-jwt)** - Autenticação baseada em JSON Web Tokens
-- **[Fastify Cookie](https://github.com/fastify/fastify-cookie)** - Manipulação segura de Refresh Tokens via HTTP-only Cookies
-- **[BcryptJS](https://github.com/dcodeIO/bcrypt.js)** - Criptografia/Hashing seguro de senhas
-
-### Testes & Qualidade
-
-- **[Vitest](https://vitest.dev/)** - Test runner de altíssima performance
-- **[Supertest](https://github.com/ladjs/supertest)** - Requisições HTTP simuladas para testes E2E
-- **[ESLint](https://eslint.org/)** - Padronização e análise estática de código
-- **[GitHub Actions](https://github.com/features/actions)** - Automação de pipelines de CI/CD
+### Testing & Quality
+* [**Vitest**](https://vitest.dev/) - Blazing fast test runner
+* [**Supertest**](https://github.com/ladjs/supertest) - HTTP assertions for E2E testing
+* [**ESLint**](https://eslint.org/) - Code linting and static analysis
+* [**GitHub Actions**](https://github.com/features/actions) - CI/CD pipeline automation
 
 ---
 
-## 📐 Arquitetura do Sistema
+## 📐 System Architecture
 
-A aplicação foi desenhada mantendo as **Regras de Negócio totalmente desacopladas da camada de Infraestrutura e Frameworks**.
+The application was designed keeping **Business Rules completely decoupled from the Infrastructure and Frameworks layers**.
 
 ```text
 src/
-├── @types/            # Extensões de tipagens globais (Fastify / JWT)
-├── env/               # Validation e exportação de variáveis de ambiente com Zod
-├── http/              # Camada de Apresentação / HTTP
-│   ├── controllers/   # Handlers HTTP organizados por domínio (users, gyms, check-ins)
-│   ├── middlewares/   # Autenticação JWT e Autorização por Role (RBAC)
-│   └── routes.ts      # Registro central de rotas do Fastify
-├── lib/               # Clientes e instâncias globais (Prisma Client)
-├── repositories/      # Camada de Acesso a Dados (Data Access Layer)
-│   ├── in-memory/     # Implementações em memória para testes unitários
-│   └── prisma/        # Implementações reais com Prisma ORM
-├── use-cases/         # Camada de Aplicação / Regras de Negócio (Domain Layer)
-│   ├── errors/        # Exceções customizadas de domínio
-│   └── factories/     # Design Pattern Factory para Injeção de Dependências
-└── utils/             # Helpers e utilitários (Cálculo de distância Havesine, test helpers)
+├── @types/            # Global type extensions (Fastify / JWT)
+├── env/               # Environment variables validation and export with Zod
+├── http/              # Presentation / HTTP Layer
+│   ├── controllers/   # HTTP handlers organized by domain (users, gyms, check-ins)
+│   ├── middlewares/   # JWT authentication and Role-Based Access Control (RBAC)
+│   └── routes.ts      # Fastify central routes registry
+├── lib/               # Global clients and instances (Prisma Client)
+├── repositories/      # Data Access Layer
+│   ├── in-memory/     # In-memory implementations for unit tests
+│   └── prisma/        # Real implementations using Prisma ORM
+├── use-cases/         # Application / Business Logic Layer (Domain Layer)
+│   ├── errors/        # Custom domain exceptions
+│   └── factories/     # Factory Design Pattern for Dependency Injection
+└── utils/             # Helpers and utilities (Haversine distance calculation, test helpers)
 ```
 
-### 🔒 Autenticação, Refresh Token e Controle de Acesso (JWT & RBAC)
+### 🔒 Authentication, Refresh Token & Access Control (JWT & RBAC)
 
-A segurança da API implementa estratégias modernas de proteção de rotas e gerenciamento de sessões:
+The API security implements modern strategies for route protection and session management:
 
-- **Validação de Token (JWT & Bearer):**
-  - O middleware `verify-jwt.ts` intercepta rotas protegidas validando o token JWT enviado no header de autorização.
-  - O payload decodificado é injetado em `request.user`, permitindo identificar o ID e a role do usuário.
+* **Token Validation (JWT & Bearer):**
+  * The `verify-jwt.ts` middleware intercepts protected routes validating the JWT token sent in the authorization header.
+  * The decoded payload is injected into `request.user`, allowing identification of the user ID and role.
 
-- **Renovação de Sessão via HttpOnly Cookie (Refresh Token):**
-  - Configurado globalmente via `@fastify/jwt` e `@fastify/cookie` no `app.ts` para mapear um cookie chamado `refreshToken`.
-  - Na rota de refresh, o método `await request.jwtVerify({ onlyCookie: true })` ignora o header comum e olha exclusivamente para o cookie seguro, validando a continuidade da sessão do usuário sem expor credenciais a scripts maliciosos (prevenção contra XSS).
+* **Session Renewal via HttpOnly Cookie (Refresh Token):**
+  * Globally configured via `@fastify/jwt` and `@fastify/cookie` in `app.ts` to manage a cookie named `refreshToken`.
+  * On the refresh route, `await request.jwtVerify({ onlyCookie: true })` ignores common headers and exclusively targets the secure cookie, validating session continuity without exposing credentials to malicious scripts (XSS prevention).
 
-- **Controle de Acesso por Cargo / RBAC (`verifyUserRole`):**
-  - Implementado através de uma Higher-Order Function (HOF) em `verify-user-role.ts`, restringindo ações sensíveis (como cadastro de academias ou validação de check-ins) apenas a usuários com o perfil `ADMIN`.
+* **Role-Based Access Control / RBAC (`verifyUserRole`):**
+  * Implemented through a Higher-Order Function (HOF) in `verify-user-role.ts`, restricting sensitive actions (such as gym creation or check-in validation) strictly to users with the `ADMIN` role.
 
----
-
-## 🔄 Fluxo de Dados (Step-by-Step)
-
-Para garantir legibilidade, manutenibilidade e facilidade de testes, cada requisição segue um fluxo estrito de responsabilidades:
+🔄 **Data Flow (Step-by-Step)**
+To ensure readability, maintainability, and testing ease, each request follows a strict responsibility flow:
 
 ```text
-[Cliente HTTP]
+[HTTP Client]
       │
       ▼
-1. [HTTP Route + Middleware]  ─── (Valida JWT/Cookie e Autorização por Cargo via RBAC)
+1. [HTTP Route + Middleware]  ─── (Validates JWT/Cookie and RBAC Role Authorization)
       │
       ▼
-2. [Controller]               ─── (Valida input da requisição via Zod)
+2. [Controller]               ─── (Validates request inputs via Zod)
       │
       ▼
-3. [Factory]                  ─── (Instancia Use Case + Injeta o Repositório Prisma)
+3. [Factory]                  ─── (Instantiates Use Case + Injects Prisma Repository)
       │
       ▼
-4. [Use Case]                 ─── (Executa regras de negócio puras, e.g. distância máxima de 100m)
+4. [Use Case]                 ─── (Executes pure business rules, e.g., max 100m distance)
       │
       ▼
-5. [Repository]               ─── (Comunica-se com o PostgreSQL via Prisma ORM)
+5. [Repository]               ─── (Communicates with PostgreSQL via Prisma ORM)
 ```
 
-### O papel do Factory Pattern
+**The role of the Factory Pattern**
+Inside `src/use-cases/factories/`, factory functions centralize the instantiation of real repositories and dependency injection into Use Cases, keeping Controllers free from managing service initialization.
 
-Na pasta `src/use-cases/factories/`, funções fábrica centralizam a instanciação dos repositórios reais e a injeção de dependências nos Casos de Uso, impedindo que os Controllers precisem gerenciar a inicialização de serviços.
+🧪 **TDD Methodology & Testing Strategy**
+The project was structured from the ground up following TDD (Test-Driven Development) principles, ensuring high cohesion, low coupling, and robust business logic before writing HTTP controllers.
 
----
+1. **Unit Tests (`npm run test`)**
+   * **Focus:** Validate pure business rules inside Use Cases in complete isolation.
+   * **In-Memory Repositories:** Use of in-memory implementations (`src/repositories/in-memory/`) matching real repository contracts. This allows unit tests to run in milliseconds without databases or external I/O dependency.
 
-## 🧪 Metodologia TDD & Estratégia de Testes
+2. **End-to-End Tests (`npm run test:e2e`) & Vitest Custom Environment**
+   * To test the complete application lifecycle (Routes, Middlewares, Controllers, HTTP Status, Cookies, and Real Database) in parallel without state collisions, a Custom Vitest Environment was developed (`prisma/vitest-environment-prisma/prisma-test-environment.ts`).
+   * **How it works:**
+     * **Schema per Test File:** Before each E2E suite runs, the environment generates a unique schema name using a UUID.
+     * **Dynamic URL Injection:** Prisma's `DATABASE_URL` is dynamically rewritten at runtime to point to the isolated schema in PostgreSQL.
+     * **Migration Deploy:** Applies database migrations automatically and swiftly via `npx prisma migrate deploy`.
+     * **Tear Down:** Once tests finish execution, a `DROP SCHEMA ... CASCADE` command drops the schema to keep the environment clean.
 
-O projeto foi inteiramente estruturado seguindo os princípios de TDD (Test-Driven Development), garantindo alta coesão, baixo acoplamento e confiabilidade nas regras de negócio antes mesmo da implementação dos controllers HTTP.
+⚡ **How to Run the Project Locally**
 
-### 1. Testes Unitários (`npm run test`)
+### Prerequisites
+* Node.js v20+
+* Docker and Docker Compose
 
-- **Foco:** Validar regras de negócio puras nos Use Cases de forma isolada.
-- **Repositórios In-Memory:** Utilização de implementações em memória (`src/repositories/in-memory/`) que cumprem os mesmos contratos dos repositórios reais. Isso permite que os testes unitários rodem em milissegundos, sem dependência de banco de dados ou I/O externo.
-
-### 2. Testes End-to-End (`npm run test:e2e`) & O Ambiente Customizado do Vitest
-
-Para testar o ciclo completo da aplicação (Rotas, Middlewares, Controllers, Status HTTP, Cookies e Banco de Dados Real) em paralelo sem conflitos de estado, foi desenvolvido um Environment Customizado para o Vitest (`prisma/vitest-environment-prisma/prisma-test-environment.ts`).
-
-**Como Funciona:**
-
-- **Schema por Arquivo de Teste:** Antes de cada suíte E2E rodar, o ambiente gera um nome de schema único baseado em um UUID.
-- **Injeção de URL Dinâmica:** A `DATABASE_URL` do Prisma é reescrita em tempo de execução para apontar para o novo schema isolado no PostgreSQL.
-- **Migration Deploy:** Aplica as migrações do banco de forma rápida e automatizada via `npx prisma migrate deploy`.
-- **Tear Down:** Ao final da execução dos testes, executa um `DROP SCHEMA ... CASCADE` para destruir o schema e manter o ambiente limpo.
-
----
-
-## ⚡ Como Executar o Projeto Localmente
-
-### Pré-requisitos
-
-- Node.js v20+
-- Docker e Docker Compose
-
-### 1. Clonar e Instalar Dependências
-
+### 1. Clone and Install Dependencies
 ```bash
 git clone git@github.com:developer-rolin/api-solid-gympass-style.git
 cd api_solid_solid_gympass
 npm install
 ```
 
-### 2. Configurar Variáveis de Ambiente
-
-Crie um arquivo `.env` na raiz do projeto com base no `.env.example`:
-
+### 2. Configure Environment Variables
+Create a `.env` file in the root directory based on `.env.example`:
 ```env
 NODE_ENV=dev
 PORT=3333
 DATABASE_URL="postgresql://docker:docker@localhost:5432/apisolid?schema=public"
-JWT_SECRET="sua-chave-secreta-jwt"
+JWT_SECRET="your-jwt-secret-key"
 ```
 
-### 3. Subir o Banco de Dados (Docker)
-
+### 3. Spin Up the Database (Docker)
 ```bash
 docker compose up -d
 ```
 
-### 4. Rodar as Migrações do Banco
-
+### 4. Run Database Migrations
 ```bash
 npm run prisma:migrate:dev
 ```
 
-### 5. Executar a Aplicação
-
+### 5. Run the Application
 ```bash
-# Modo de desenvolvimento com live-reload
+# Development mode with live-reload
 npm run start:dev
 
-# Build de produção
+# Production build
 npm run build
 
-# Executar build de produção
+# Run production build
 npm run start
 ```
 
----
-
-## 📜 Comandos de Testes e Qualidade
-
+📜 **Test & Quality Commands**
 ```bash
-# Executar testes unitários (TDD / In-memory)
+# Run unit tests (TDD / In-memory)
 npm run test
 
-# Executar testes unitários em modo watch
+# Run unit tests in watch mode
 npm run test:watch
 
-# Executar testes End-to-End (E2E) com banco isolado
+# Run End-to-End (E2E) tests with isolated database
 npm run test:e2e
 
-# Executar testes E2E em modo watch
+# Run E2E tests in watch mode
 npm run test:e2e:watch
 
-# Gerar relatório de cobertura de código
+# Generate code coverage report
 npm run test:coverage
 
-# Rodar linter (ESLint)
+# Run linter (ESLint)
 npm run lint
 ```
 
----
-
-## ⚙️ Integração Contínua (CI/CD)
-
-O repositório possui automação configurada via GitHub Actions (`.github/workflows/`). A cada push ou pull request:
-
-1. Provisiona-se uma máquina virtual Ubuntu com Node.js v20.
-2. Um container do PostgreSQL é inicializado em segundo plano.
-3. As migrações do Prisma são aplicadas automaticamente.
-4. Toda a suíte de testes unitários e E2E é validada para garantir que nenhuma regressão foi introduzida.
+⚙️ **Continuous Integration (CI/CD)**
+The repository features automated pipelines via GitHub Actions (`.github/workflows/`). On every push or pull request:
+1. An Ubuntu virtual machine with Node.js v20 is provisioned.
+2. A PostgreSQL container boots up in the background.
+3. Prisma migrations are applied automatically.
+4. The entire unit and E2E test suite runs to prevent regressions.
